@@ -2,7 +2,7 @@ import { DashboardNav } from "@/components/dashboard-nav"
 import { UserNav } from "@/components/user-nav"
 import { createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Menu } from "lucide-react"
 
@@ -38,6 +38,7 @@ export default async function DashboardLayout({
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="pr-0">
+                                <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
                                 <a className="flex items-center space-x-2 font-bold" href="/">
                                     <span className="font-bold">Clearpost Admin</span>
                                 </a>

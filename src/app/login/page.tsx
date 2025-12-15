@@ -1,6 +1,7 @@
 import { login } from './actions'
+import { SubmitButton } from './submit-button'
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -57,9 +58,7 @@ export default async function LoginPage({
                                 className="h-10 rounded-md border-gray-200 focus:border-[#635bff] focus:ring-[#635bff] bg-white dark:bg-zinc-900 transition-all shadow-sm"
                             />
                         </div>
-                        <Button className="w-full bg-[#635bff] hover:bg-[#424770] text-white font-semibold h-10 shadow-sm transition-all" type="submit">
-                            Sign In
-                        </Button>
+                        <SubmitButton />
                     </CardContent>
                 </form>
             </Card>

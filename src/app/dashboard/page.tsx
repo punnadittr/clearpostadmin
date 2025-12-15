@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link"
 import { createClient } from "@/utils/supabase/server"
 import { FileText, Clock, CheckCircle } from "lucide-react"
 
@@ -28,20 +29,22 @@ export default async function DashboardPage() {
         <div className="space-y-4">
             <h2 className="text-3xl font-bold tracking-tight">Overview</h2>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="stripe-card hover:-translate-y-1 transition-transform duration-300">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-[#6b7c93]">
-                            Total Submissions
-                        </CardTitle>
-                        <FileText className="h-4 w-4 text-[#aab7c4]" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-[#32325d]">{totalCount || 0}</div>
-                        <p className="text-xs text-[#6b7c93] mt-1">
-                            All time form submissions
-                        </p>
-                    </CardContent>
-                </Card>
+                <Link href="/dashboard/submissions" className="block">
+                    <Card className="stripe-card hover:-translate-y-1 transition-transform duration-300 h-full cursor-pointer">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium text-[#6b7c93]">
+                                Total Submissions
+                            </CardTitle>
+                            <FileText className="h-4 w-4 text-[#aab7c4]" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-[#32325d]">{totalCount || 0}</div>
+                            <p className="text-xs text-[#6b7c93] mt-1">
+                                View all submissions &rarr;
+                            </p>
+                        </CardContent>
+                    </Card>
+                </Link>
                 <Card className="stripe-card hover:-translate-y-1 transition-transform duration-300">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-[#6b7c93]">
