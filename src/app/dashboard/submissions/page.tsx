@@ -111,18 +111,47 @@ export default async function SubmissionsPage() {
                                         )}
                                     </TableCell>
                                     <TableCell>
-                                        {submission.evidence_url ? (
-                                            <a
-                                                href={submission.evidence_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-[#635bff] hover:text-[#424770] text-xs font-medium"
-                                            >
-                                                View
-                                            </a>
-                                        ) : (
-                                            <span className="text-gray-300 text-xs">None</span>
-                                        )}
+                                        {(() => {
+                                            if (!submission.evidence_url) return <span className="text-gray-300 text-xs">None</span>;
+
+                                            let urls: string[] = [];
+                                            const rawEvidence = submission.evidence_url;
+
+                                            if (Array.isArray(rawEvidence)) {
+                                                urls = rawEvidence;
+                                            } else if (typeof rawEvidence === 'string') {
+                                                try {
+                                                    const parsed = JSON.parse(rawEvidence);
+                                                    if (Array.isArray(parsed)) {
+                                                        urls = parsed;
+                                                    } else {
+                                                        urls = [rawEvidence];
+                                                    }
+                                                } catch {
+                                                    if (rawEvidence.includes(',')) {
+                                                        urls = rawEvidence.split(',').map(u => u.trim()).filter(Boolean);
+                                                    } else {
+                                                        urls = [rawEvidence];
+                                                    }
+                                                }
+                                            }
+
+                                            return (
+                                                <div className="flex flex-col gap-1">
+                                                    {urls.map((url, index) => (
+                                                        <a
+                                                            key={index}
+                                                            href={url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-[#635bff] hover:text-[#424770] text-xs font-medium block"
+                                                        >
+                                                            Link {index + 1}
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()}
                                     </TableCell>
                                     <TableCell className="text-right pr-6">
                                         <Badge variant="secondary" className={submission.current_status === 'Completed' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' : 'bg-gray-100 text-gray-700 hover:bg-gray-100'}>

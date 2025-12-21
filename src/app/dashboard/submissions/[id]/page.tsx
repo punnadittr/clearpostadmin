@@ -126,15 +126,61 @@ export default async function SubmissionDetailPage({
                         <div className="space-y-4">
                             <div className="grid gap-1">
                                 <span className="text-sm font-medium text-[#6b7c93]">Evidence URL</span>
-                                {submission.evidence_url ? (
-                                    <Button variant="outline" className="w-fit gap-2 text-[#635bff] border-gray-200 hover:bg-gray-50 hover:text-[#424770]" asChild>
-                                        <a href={submission.evidence_url} target="_blank" rel="noopener noreferrer">
-                                            View Evidence <ExternalLink className="h-4 w-4" />
-                                        </a>
-                                    </Button>
-                                ) : (
-                                    <span className="text-sm text-gray-400">No evidence uploaded.</span>
-                                )}
+                                {/* Evidence Parsing Logic */
+                                    (() => {
+                                        let evidenceUrls: string[] = [];
+                                        const rawEvidence = submission.evidence_url;
+
+                                        if (rawEvidence) {
+                                            if (Array.isArray(rawEvidence)) {
+                                                evidenceUrls = rawEvidence;
+                                            } else if (typeof rawEvidence === 'string') {
+                                                try {
+                                                    // Try to parse as JSON array
+                                                    const parsed = JSON.parse(rawEvidence);
+                                                    if (Array.isArray(parsed)) {
+                                                        evidenceUrls = parsed;
+                                                    } else {
+                                                        // If valid JSON but not array, treat as single string
+                                                        evidenceUrls = [rawEvidence];
+                                                    }
+                                                } catch (e) {
+                                                    // Check if it's comma separated
+                                                    if (rawEvidence.includes(',')) {
+                                                        evidenceUrls = rawEvidence.split(',').map(u => u.trim()).filter(Boolean);
+                                                    } else {
+                                                        evidenceUrls = [rawEvidence];
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        return evidenceUrls.length > 0 ? (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                                                {evidenceUrls.map((url, index) => (
+                                                    <a
+                                                        key={index}
+                                                        href={url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="group relative block aspect-video overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-800"
+                                                    >
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img
+                                                            src={url}
+                                                            alt={`Evidence ${index + 1}`}
+                                                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                        />
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">
+                                                            <ExternalLink className="h-6 w-6 text-white opacity-0 drop-shadow-md transition-opacity group-hover:opacity-100" />
+                                                        </div>
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="text-sm text-gray-400">No evidence uploaded.</span>
+                                        );
+                                    })()}
                             </div>
                             <div className="grid gap-1">
                                 <span className="text-sm font-medium text-[#6b7c93]">Submission Date</span>
