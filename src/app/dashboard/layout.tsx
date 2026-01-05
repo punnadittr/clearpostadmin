@@ -21,7 +21,7 @@ export default async function DashboardLayout({
     return (
         <div className="flex min-h-screen flex-col">
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container flex h-14 items-center px-4 md:px-8">
+                <div className="w-full max-w-7xl mx-auto flex h-14 items-center px-4 md:px-8">
                     <div className="mr-4 hidden md:flex">
                         <a className="mr-6 flex items-center space-x-2 font-bold" href="/">
                             Clearpost Admin
@@ -56,7 +56,7 @@ export default async function DashboardLayout({
                     </div>
                 </div>
             </header>
-            <div className="flex-1 space-y-4 p-8 pt-6">
+            <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
                 {children}
             </div>
         </div>

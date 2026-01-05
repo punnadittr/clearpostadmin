@@ -31,26 +31,26 @@ export default async function SubmissionsPage() {
                 <h2 className="text-3xl font-bold tracking-tight">Submissions</h2>
             </div>
             {/* Mobile View: Cards */}
-            <div className="grid gap-4 md:hidden">
+            <div className="grid grid-cols-1 gap-4 md:hidden">
                 {submissions?.map((submission) => (
-                    <Link href={`/dashboard/submissions/${submission.id}`} key={submission.id}>
-                        <Card className="stripe-card hover:bg-gray-50/50 transition-colors">
+                    <Link href={`/dashboard/submissions/${submission.id}`} key={submission.id} className="block">
+                        <Card className="stripe-card hover:bg-gray-50/50 transition-colors w-full overflow-hidden">
                             <CardContent className="p-4 space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="font-mono text-xs text-[#6b7c93]">#{submission.id}</span>
-                                    <Badge variant="secondary" className={submission.current_status === 'Completed' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' : 'bg-gray-100 text-gray-700 hover:bg-gray-100'}>
+                                <div className="flex items-center justify-between gap-2 min-w-0">
+                                    <span className="font-mono text-xs text-[#6b7c93] truncate">#{submission.id}</span>
+                                    <Badge variant="secondary" className={`shrink-0 max-w-[50%] truncate ${submission.current_status === 'Completed' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' : 'bg-gray-100 text-gray-700 hover:bg-gray-100'}`}>
                                         {submission.current_status || 'Pending'}
                                     </Badge>
                                 </div>
                                 <div>
-                                    <div className="font-medium text-[#32325d]">{submission.full_name}</div>
+                                    <div className="font-medium text-[#32325d] truncate" title={submission.full_name || ''}>{submission.full_name}</div>
                                     <div className="text-sm text-[#6b7c93] truncate">{submission.item_description}</div>
                                 </div>
                                 <div className="flex items-center justify-between text-xs text-[#9b9b9b]">
-                                    <span>{new Date(submission.created_at).toLocaleDateString()}</span>
+                                    <span className="shrink-0">{new Date(submission.created_at).toLocaleDateString()}</span>
                                     {submission.tracking_number && (
-                                        <div className="flex items-center gap-1">
-                                            <span className="font-mono">{submission.tracking_number}</span>
+                                        <div className="flex items-center gap-1 min-w-0">
+                                            <span className="font-mono truncate" title={submission.tracking_number}>{submission.tracking_number}</span>
                                         </div>
                                     )}
                                 </div>
