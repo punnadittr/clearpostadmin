@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { privateDocumentHeaders, privateDocumentResponse } from '@/lib/private-document'
 import { createClient } from '@/utils/supabase/server'
 import { SUVARNABHUMI_BUCKET, SUVARNABHUMI_TABLE, validRequestId } from '@/lib/suvarnabhumi'
 
 export const dynamic = 'force-dynamic'
-const privateHeaders = { 'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' }
+const privateHeaders = privateDocumentHeaders
 
 export async function GET(request: NextRequest, { params }: {
     params: Promise<{ id: string; index: string }>
@@ -28,9 +29,7 @@ export async function GET(request: NextRequest, { params }: {
     if (!data) return error('File not found.', 404)
     const path: string | undefined = data.attachment_paths[Number(index)]
     if (!path) return error('File not found.', 404)
-    const options = request.nextUrl.searchParams.get('download') === '1'
-        ? { download: data.attachment_names[Number(index)] || `Attachment ${Number(index) + 1}` } : undefined
-    const { data: file, error: fileError } = await supabase.storage.from(SUVARNABHUMI_BUCKET).createSignedUrl(path, 300, options)
+    const { data: file, error: fileError } = await supabase.storage.from(SUVARNABHUMI_BUCKET).download(path)
     if (fileError || !file) return error('Could not open this file. Please try again.', 503)
-    return NextResponse.redirect(file.signedUrl, { status: 307, headers: privateHeaders })
+    return privateDocumentResponse(file, data.attachment_names[Number(index)] || `Attachment ${Number(index) + 1}`, request.nextUrl.searchParams.get('download') === '1')
 }

@@ -10,10 +10,11 @@ function load(relative, imports = {}) {
     const source = fs.readFileSync(path.join(__dirname, '..', relative), 'utf8')
     const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
     const module = { exports: {} }
-    vm.runInNewContext(compiled, { module, exports: module.exports, console, URLSearchParams, require: name => imports[name] || require(name) })
+    vm.runInNewContext(compiled, { module, exports: module.exports, console, URLSearchParams, ReadableStream, Uint8Array, require: name => imports[name] || require(name) })
     return module.exports
 }
 const helpers = load('src/lib/suvarnabhumi.ts')
+const documentHelpers = load('src/lib/private-document.ts', { 'next/server': { NextResponse } })
 const id = '12345678-1234-4234-8234-123456789abc'
 
 function handler({ user = { id: 'admin-id' }, allowed = true, accessError = null, record = { attachment_paths: ['private/notice.pdf'], attachment_names: ['invoice.pdf'] }, readError = null, fileError = null } = {}) {
@@ -22,10 +23,10 @@ function handler({ user = { id: 'admin-id' }, allowed = true, accessError = null
         auth: { getUser: async () => ({ data: { user } }) },
         rpc: async name => { calls.push(['access', name]); return { data: allowed, error: accessError } },
         from: table => { calls.push(['table', table]); return { select: () => ({ eq: (column, value) => { calls.push(['record', column, value]); return { maybeSingle: async () => ({ data: record, error: readError }) } } }) } },
-        storage: { from: bucket => ({ createSignedUrl: async (...args) => { calls.push(['file', bucket, ...args]); return { data: { signedUrl: 'https://example.supabase.co/storage/v1/object/sign/private.pdf?token=test' }, error: fileError } } }) },
+        storage: { from: bucket => ({ download: async (...args) => { calls.push(['file', bucket, ...args]); return { data: new Blob(['TEST ONLY'], { type: 'application/pdf' }), error: fileError } } }) },
     }
     return { calls, GET: load('src/app/dashboard/suvarnabhumi/[id]/attachments/[index]/route.ts', {
-        'next/server': { NextResponse }, '@/utils/supabase/server': { createClient: async () => client }, '@/lib/suvarnabhumi': helpers,
+        'next/server': { NextResponse }, '@/utils/supabase/server': { createClient: async () => client }, '@/lib/suvarnabhumi': helpers, '@/lib/private-document': documentHelpers,
     }).GET }
 }
 async function run(config, index = '0', download = false, requestId = id) {
@@ -78,18 +79,19 @@ test('missing requests and missing attachments are not served', async () => {
         assert.equal(result.calls.some(call => call[0] === 'file'), false)
     }
 })
-test('opens only a stored attachment with a five-minute URL', async () => {
+test('opens only a stored attachment through the authenticated response', async () => {
     const result = await run()
-    assert.equal(result.response.status, 307)
-    assert.match(result.response.headers.get('location'), /^https:\/\/example.supabase.co\/storage\/v1\/object\/sign\//)
+    assert.equal(result.response.status, 200)
+    assert.equal(result.response.headers.get('location'), null)
+    assert.equal(await result.response.text(), 'TEST ONLY')
     assert.equal(result.response.headers.get('referrer-policy'), 'no-referrer')
     assert.deepEqual(result.calls.find(call => call[0] === 'record'), ['record', 'id', id])
-    assert.deepEqual(result.calls.find(call => call[0] === 'file'), ['file', 'suvarnabhumi-notices', 'private/notice.pdf', 300, undefined])
+    assert.deepEqual(result.calls.find(call => call[0] === 'file'), ['file', 'suvarnabhumi-notices', 'private/notice.pdf'])
 })
 test('download keeps the original file name', async () => {
     const result = await run({}, '0', true)
-    assert.equal(result.response.status, 307)
-    assert.equal(result.calls.find(call => call[0] === 'file')[4].download, 'invoice.pdf')
+    assert.equal(result.response.status, 200)
+    assert.match(result.response.headers.get('content-disposition'), /attachment; filename="invoice.pdf"/)
 })
 test('storage failures do not return a successful redirect', async () => {
     assert.equal((await run({ fileError: { code: 'FAIL' } })).response.status, 503)

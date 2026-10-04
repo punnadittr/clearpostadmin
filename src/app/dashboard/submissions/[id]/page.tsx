@@ -1,11 +1,12 @@
+import { submissionAttachments, validSubmissionId } from "@/lib/submission-attachments"
 
 import { createClient } from "@/utils/supabase/server"
 import { notFound } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowLeft, ExternalLink, Package, User, FileText, Activity } from "lucide-react"
+import { ArrowLeft, Package, User, FileText, Activity } from "lucide-react"
 
 export default async function SubmissionDetailPage({
     params,
@@ -13,6 +14,7 @@ export default async function SubmissionDetailPage({
     params: Promise<{ id: string }>
 }) {
     const { id } = await params
+    if (!validSubmissionId(id)) notFound()
     const supabase = await createClient()
 
     const { data: submission, error } = await supabase
@@ -73,6 +75,7 @@ export default async function SubmissionDetailPage({
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                        {submission.requested_service && <div className="grid gap-1 rounded-lg border border-gray-200 bg-gray-50 p-3"><span className="text-sm font-medium text-[#6b7c93]">Selected service</span><span className="text-base text-[#32325d]">{submission.requested_service.title}</span><span className="text-sm font-medium text-[#32325d]">{submission.requested_service.isStartingPrice ? 'From ' : ''}THB {Number(submission.requested_service.feeTHB).toLocaleString('en-US')}</span><span className="text-xs leading-relaxed text-[#6b7c93]">Service fee only. Duties, VAT and third-party charges are separate. Final scope and fee are confirmed after review.</span></div>}
                         <div className="grid gap-1">
                             <span className="text-sm font-medium text-[#6b7c93]">Tracking Number</span>
                             <span className="text-lg font-mono bg-gray-50 text-[#32325d] p-2 rounded w-fit border border-gray-100">
@@ -125,63 +128,10 @@ export default async function SubmissionDetailPage({
 
                         <div className="space-y-4">
                             <div className="grid gap-1">
-                                <span className="text-sm font-medium text-[#6b7c93]">Evidence URL</span>
-                                {/* Evidence Parsing Logic */
-                                    (() => {
-                                        let evidenceUrls: string[] = [];
-                                        const rawEvidence = submission.evidence_url;
-
-                                        if (rawEvidence) {
-                                            if (Array.isArray(rawEvidence)) {
-                                                evidenceUrls = rawEvidence;
-                                            } else if (typeof rawEvidence === 'string') {
-                                                try {
-                                                    // Try to parse as JSON array
-                                                    const parsed = JSON.parse(rawEvidence);
-                                                    if (Array.isArray(parsed)) {
-                                                        evidenceUrls = parsed;
-                                                    } else {
-                                                        // If valid JSON but not array, treat as single string
-                                                        evidenceUrls = [rawEvidence];
-                                                    }
-                                                } catch (e) {
-                                                    // Check if it's comma separated
-                                                    if (rawEvidence.includes(',')) {
-                                                        evidenceUrls = rawEvidence.split(',').map(u => u.trim()).filter(Boolean);
-                                                    } else {
-                                                        evidenceUrls = [rawEvidence];
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        return evidenceUrls.length > 0 ? (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                                                {evidenceUrls.map((url, index) => (
-                                                    <a
-                                                        key={index}
-                                                        href={url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="group relative block aspect-video overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-800"
-                                                    >
-                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                        <img
-                                                            src={url}
-                                                            alt={`Evidence ${index + 1}`}
-                                                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                                        />
-                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">
-                                                            <ExternalLink className="h-6 w-6 text-white opacity-0 drop-shadow-md transition-opacity group-hover:opacity-100" />
-                                                        </div>
-                                                    </a>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <span className="text-sm text-gray-400">No evidence uploaded.</span>
-                                        );
-                                    })()}
+                                <span className="text-sm font-medium text-[#6b7c93]">Private documents</span>
+                                {submissionAttachments(submission).length ? <ul className="space-y-3">{submissionAttachments(submission).map((file, index) => <li key={index} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3"><span className="min-w-0 break-all text-sm text-[#32325d]">{file.name}</span><div className="flex shrink-0 gap-4 text-sm text-[#635bff]"><a href={`/dashboard/submissions/${submission.id}/attachments/${index}`} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">Open</a><a href={`/dashboard/submissions/${submission.id}/attachments/${index}?download=1`} className="underline underline-offset-4">Download</a></div></li>)}</ul> : <span className="text-sm text-gray-400">No documents uploaded.</span>}
                             </div>
+                            {submission.request_reference && <div className="grid gap-1"><span className="text-sm font-medium text-[#6b7c93]">Customer reference</span><span className="break-all font-mono text-xs text-[#32325d]">{submission.request_reference}</span></div>}
                             <div className="grid gap-1">
                                 <span className="text-sm font-medium text-[#6b7c93]">Submission Date</span>
                                 <span className="text-sm text-[#32325d] font-medium">
