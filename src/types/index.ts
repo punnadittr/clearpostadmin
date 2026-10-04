@@ -11,14 +11,3 @@ export type FormSubmission = {
     license_status: string | null
     evidence_url: string | string[] | null // Can be comma-separated URLs or JSON array
 }
-
-export type Appointment = {
-    id: string
-    created_at: string
-    customer_name: string
-    customer_email: string | null
-    appointment_time: string
-    status: string
-    meeting_link: string | null
-    whatsapp: string | null
-}

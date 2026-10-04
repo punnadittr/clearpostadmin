@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, FileText, Settings, Calendar } from "lucide-react"
+import { LayoutDashboard, FileText, Plane } from "lucide-react"
 
 const items = [
     {
@@ -17,9 +17,9 @@ const items = [
         icon: FileText,
     },
     {
-        title: "Appointments",
-        href: "/dashboard/appointments",
-        icon: Calendar,
+        title: "Suvarnabhumi",
+        href: "/dashboard/suvarnabhumi",
+        icon: Plane,
     },
 ]
 
@@ -34,7 +34,7 @@ export function DashboardNav({ className, ...props }: React.HTMLAttributes<HTMLE
                     href={item.href}
                     className={cn(
                         "flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                        pathname === item.href ? "bg-accent text-accent-foreground" : "transparent"
+                        (pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`))) ? "bg-accent text-accent-foreground" : "transparent"
                     )}
                 >
                     <item.icon className="mr-2 h-4 w-4" />
