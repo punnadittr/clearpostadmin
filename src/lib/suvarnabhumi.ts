@@ -1,13 +1,14 @@
 export const SUVARNABHUMI_TABLE = 'suvarnabhumi_clearance_requests'
 export const SUVARNABHUMI_BUCKET = 'suvarnabhumi-notices'
 export const SUVARNABHUMI_PAGE_SIZE = 25
-export const SUVARNABHUMI_COLUMNS = 'id,created_at,full_name,carrier,whatsapp_number,email,tracking_number,item_description,courier_message,attachment_paths,attachment_names'
+export const SUVARNABHUMI_COLUMNS = 'id,created_at,full_name,carrier,contact_method,whatsapp_number,email,tracking_number,item_description,courier_message,attachment_paths,attachment_names'
 
 export type SuvarnabhumiRequest = {
     id: string
     created_at: string
     full_name: string
     carrier: string
+    contact_method: 'whatsapp' | 'email'
     whatsapp_number: string | null
     email: string | null
     tracking_number: string | null
