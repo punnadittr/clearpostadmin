@@ -1,4 +1,5 @@
 import { login } from './actions'
+import { safeNextPath } from '@/lib/login-redirect'
 import { SubmitButton } from './submit-button'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,9 +9,10 @@ import { Label } from "@/components/ui/label"
 export default async function LoginPage({
     searchParams,
 }: {
-    searchParams: Promise<{ error?: string }>
+    searchParams: Promise<{ error?: string; next?: string }>
 }) {
-    const { error } = await searchParams
+    const { error, next } = await searchParams
+    const nextPath = safeNextPath(next)
 
 
     return (
@@ -28,6 +30,7 @@ export default async function LoginPage({
                     </CardDescription>
                 </CardHeader>
                 <form action={login}>
+                    {nextPath && <input type="hidden" name="next" value={nextPath} />}
                     <CardContent className="space-y-5 px-8 pb-8">
                         {error && (
                             <div className="bg-[#fff1f2] border-l-4 border-red-500 text-red-700 text-sm p-3 font-medium animate-in fade-in">

@@ -27,3 +27,11 @@ export function submissionAttachments(submission: Pick<FormSubmission, 'attachme
 }
 
 export const validSubmissionId = (id: string) => /^[1-9]\d{0,18}$/.test(id) && BigInt(id) <= BigInt('9223372036854775807')
+
+// The public website knows a submission's reference but cannot read its database ID,
+// so links from staff notifications use the reference.
+export function submissionLookupColumn(id: string) {
+    if (validSubmissionId(id)) return 'id'
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) return 'request_reference'
+    return null
+}

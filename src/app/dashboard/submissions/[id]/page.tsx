@@ -1,4 +1,4 @@
-import { submissionAttachments, validSubmissionId } from "@/lib/submission-attachments"
+import { submissionAttachments, submissionLookupColumn } from "@/lib/submission-attachments"
 
 import { createClient } from "@/utils/supabase/server"
 import { notFound } from "next/navigation"
@@ -14,13 +14,14 @@ export default async function SubmissionDetailPage({
     params: Promise<{ id: string }>
 }) {
     const { id } = await params
-    if (!validSubmissionId(id)) notFound()
+    const lookupColumn = submissionLookupColumn(id)
+    if (!lookupColumn) notFound()
     const supabase = await createClient()
 
     const { data: submission, error } = await supabase
         .from('form_submissions')
         .select('*')
-        .eq('id', id)
+        .eq(lookupColumn, id)
         .single()
 
     if (error || !submission) {
